@@ -3,7 +3,7 @@ package com.example
 import java.sql.Timestamp
 import org.apache.spark.sql.{Dataset, DataFrame, SparkSession}
 import org.apache.spark.sql.expressions.{UserDefinedFunction, Window}
-import org.apache.spark.sql.functions.{col, dayofweek, dense_rank, from_utc_timestamp, month, udf}
+import org.apache.spark.sql.functions.{col, date_format, dense_rank, from_utc_timestamp, month, udf}
 
 import com.example.storage.Storage
 import com.example.domain._
@@ -65,12 +65,7 @@ object PopularDestinationsJob extends BaseSparkJob {
   }
 
   def createDepartureDayColumn(bookings: DataFrame): DataFrame = {
-    def getDayOfWeek: UserDefinedFunction = udf((day: Int) => {
-      val days = Map(1 -> "Sunday", 2 -> "Monday", 3 -> "Tuesday", 4 -> "Wednesday", 5 -> "Thursday", 6 -> "Friday", 7 -> "Saturday")
-      days.get(day)
-    })
-
-    bookings.withColumn("departureDay", getDayOfWeek(dayofweek(col("departureDateLocal"))))
+    bookings.withColumn("departureDay", date_format(col("departureDateLocal"), "EEEE"))
   }
 
   def createDepartureSeasonColumn(bookings: DataFrame): DataFrame = {
